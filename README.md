@@ -2,6 +2,10 @@
 
 This project implements two React components: a Grid and a GridColumn.
 
+You can see a quick video of it in action here:
+
+https://vimeo.com/496057671
+
 The first one is a cointainer of columns which can have a fixed or variable total width, also,
 each column can have a variable with and a _fluid_ property that determines
 whether it can grow inside the grid.
