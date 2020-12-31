@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import memoize from 'memoize-one'
+import { renderToString } from 'react-dom/server'
 import GridColumn from './GridColumn'
 
 interface PType {
@@ -97,11 +97,12 @@ export default class Grid
                 return c.props.width
         })
 
-        if (takenSpace == destinationColumns)
+        if (takenSpace === destinationColumns)
         {
             return {
                 columns,
-                widths: calculatedSizes
+                widths: calculatedSizes,
+                isError: false
             }
         }
 
@@ -135,8 +136,25 @@ export default class Grid
 
         return {
             columns,
-            widths: newlyCalculatedSizes
+            widths: newlyCalculatedSizes,
+            isError: false
         }
+    }
+
+    /**
+     * Simple json serialization example of grid
+     */
+    public jsonSerialize() {
+        
+        const jsonArray = this.state.columns.map((c, i) => {
+            return {
+                width: c.props.width,
+                fluid: c.props.fluid,
+                content: renderToString(c)
+            }
+        })
+
+        return jsonArray
     }
 
     render() : ReactNode

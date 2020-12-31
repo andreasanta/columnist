@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
+
 import Grid from './grid_component/Grid'
 import GridColumn from './grid_component/GridColumn'
 
@@ -29,30 +30,32 @@ function App() {
     )
   }
 
+  const sampleState = [{
+    width: 2,
+    fluid: false,
+    content: <TextColumn />
+  },
+  {
+    width: 2,
+    fluid: false,
+    content: <GifColumn />
+  },
+  {
+    width: 2,
+    fluid: true,
+    content: <VideoColumn />
+  },
+  {
+    width: 2,
+    fluid: true,
+    content: <AudioColumn />
+  }]
 
-  const [columns, setColumns] = useState([
-   /* {
-      width: 2,
-      fluid: false,
-      content: <TextColumn />
-    },
-    {
-      width: 2,
-      fluid: false,
-      content: <GifColumn />
-    },
-    {
-      width: 2,
-      fluid: true,
-      content: <VideoColumn />
-    }, */
-    {
-      width: 2,
-      fluid: true,
-      content: <AudioColumn />
-    }
-
-  ])
+  const [columns, setColumns] = useState(sampleState)
+  const [colType, setColType] = useState('Text')
+  const [colSize, setColSize] = useState(2)
+  const [colFluid, setColFluid] = useState(true)
+  const gridRef = useRef(null)
 
   const removeColumn = (c : React.ReactElement<GridColumn>) => {
       console.log('Removing column', c)
@@ -64,14 +67,69 @@ function App() {
       }
   }
 
+  const addColumn = () => {
+    let component = null;
+    switch (colType)
+    {
+      case 'Text':
+        component = <TextColumn />
+        break
+      case 'Image':
+        component = <GifColumn />
+        break
+      case 'Audio':
+      component = <AudioColumn />
+      break
+      case 'Video':
+      component = <VideoColumn />
+      break
+    }
+
+    if (!component)
+      return
+
+    let newCols = [...columns]
+    newCols.push({
+      width: colSize,
+      fluid: colFluid,
+      content: component
+    })
+    
+    setColumns(newCols)
+  }
+
+  const jsonSerialize = () => {
+    // @ts-ignore
+    const jsonGrid = gridRef.current?.jsonSerialize()
+
+    console.log('jsonGrid', jsonGrid)
+
+    const blob = new Blob([JSON.stringify(jsonGrid, null, 2)], {type: "application/json"});
+    const url  = URL.createObjectURL(blob);
+
+    window.open(url)
+  }
 
   return (
     <div className="w-screen h-screen dark:bg-gray-800 dark:text-white">
       <header className="text-center h-16 flex justify-center items-center">
         <h1 className="font-bold text-3xl">Adaptive Grid Experiment</h1>
       </header>
+      <div className="w-screen h-20 text-center">
+      <button className="bg-blue-400 rounded p-2 m-2" onClick={(e) => jsonSerialize()}>JSON</button>
+      <button className="bg-blue-400 rounded p-2 m-2" onClick={(e) => setColumns(sampleState)}>Reset</button>
+      <button className="bg-blue-400 rounded p-2 m-2" onClick={(e) => addColumn()}>Add</button>
+        <select className="text-black p-2 m-2" value={colType} onChange={(e) => setColType(e.target.value)}>
+          <option>Text</option>
+          <option>Image</option>
+          <option>Audio</option>
+          <option>Video</option>
+        </select>
+        <input className="text-black w-20 m-2 p-2" type="number" value={colSize} onChange={(e) => setColSize(parseInt(e.target.value))} min="1" max="12" /><span className="text-lg">WIDTH</span>
+        <input className="text-black m-2" type="checkbox" checked={colFluid} onChange={(e) => setColFluid(e.target.checked)}/>&nbsp;Fluid (auto expands)
+      </div>
       <article className="w-screen flex justify-center items-center h-full">
-        <Grid onRemove={(c) => removeColumn(c)}>
+        <Grid onRemove={(c) => removeColumn(c)} ref={gridRef}>
           {
             columns.map((c, i) => <GridColumn key={i} width={c.width} fluid={c.fluid}>{c.content}</GridColumn>)
           }
