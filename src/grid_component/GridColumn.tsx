@@ -41,6 +41,6 @@ export default class GridColumn
         if (this.props.children)
             return this.props.children
 
-        return <small>Empty Column</small>;
+        return <small>Empty Base Column</small>;
     }
 }
